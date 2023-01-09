@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  backend:
+    container_name: backend
+    build: backend/.
+    ports:
+        - 3001:3001
+    image: devops_backend:v1
+    environment:
+      MYSQL_HOST: mysql
+      JWT_SECRET_TOKEN: H67Yg67G67gf67FG57f57F75f57Fgbv78h8
+      CORS_ORIGIN_REGEX: http([s])?:\/\/frontend:3002
+    healthcheck:
+      test: [ "CMD", "ls" ]
+      interval: 10s
+      timeout: 10s
+    depends_on:
+      - mysql
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile
+    image: devops_frontend:v1
+    environment:
+      SERVER_ORIGIN: backend:3001
+      
+    ports:
+      - 3002:3002
+    healthcheck:
+      test: [ "CMD", "ls" ]
+      interval: 10s
+      timeout: 10s
+    depends_on:
+      - backend
+
+  mysql:
+    container_name: database
+    image: mysql_utf8mb4:5.7
+    build: db/.
+    volumes:
+      - devops-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tradeoffer_db
+    ports:
+        - 3306:3306
+    healthcheck:
+      test: [ "CMD", "ls" ]
+      interval: 10s
+      timeout: 10s
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: [ "CMD", "ls" ]
+      interval: 10s
+      timeout: 10s
+    depends_on:
+      - mysql
+
+volumes:
+  devops-mysql-data:
